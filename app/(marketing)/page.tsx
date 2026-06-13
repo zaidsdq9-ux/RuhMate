@@ -98,26 +98,31 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Hero visual — the floating love-bot mascot on a magenta panel */}
+          {/* Hero visual — the floating love-bot mascot breaking out of a
+              magenta panel. The bot is sized larger than the box and extends
+              beyond its edges (head, raised arm, lower body) for a layered,
+              floats-in-front 3D effect. Nothing here clips: the wrapper is
+              overflow-visible and the bot floats on top via z-index. */}
           <div
-            className="anim-fade-up relative flex items-center justify-center md:justify-end"
-            style={{ animationDelay: '120ms' }}
+            className="anim-fade-up relative flex justify-center md:justify-end"
+            style={{ animationDelay: '120ms', overflow: 'visible' }}
           >
-            <div className="relative w-full max-w-[460px]">
-              {/* magenta rounded backdrop the bot floats over */}
+            {/* wrapper sized by the bot; the box is a smaller inset element */}
+            <div className="relative w-[260px] sm:w-[320px] lg:w-[380px]" style={{ overflow: 'visible' }}>
+              {/* magenta rounded backdrop — intentionally smaller than the bot */}
               <div
                 aria-hidden
-                className="absolute left-1/2 top-[14%] h-[72%] w-[78%] -translate-x-1/2 rounded-[40px]"
+                className="absolute left-[12%] right-[12%] top-[17%] bottom-[15%] z-0 rounded-[36px]"
                 style={{
                   background: 'linear-gradient(155deg, var(--rose) 0%, var(--rose-deep) 100%)',
-                  boxShadow: '0 30px 80px rgba(130,20,90,0.28)',
+                  boxShadow: '0 30px 80px rgba(130,20,90,0.30)',
                 }}
               />
               <LoveBot
-                width={360}
+                width={420}
                 priority
                 glow={false}
-                className="relative z-10 mx-auto w-[240px] sm:w-[290px] lg:w-[330px]"
+                className="relative z-10 w-full drop-shadow-[0_24px_50px_rgba(130,20,90,0.32)]"
               />
             </div>
           </div>

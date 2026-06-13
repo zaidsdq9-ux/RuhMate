@@ -1,10 +1,11 @@
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
-// Clean filename (copied from "Love bot 2.png") so the URL has no spaces to
-// encode. Source render is 1536 × 2752 (a tall portrait).
-const BOT_SRC = '/love-bot.png';
-const BOT_RATIO = 2752 / 1536;
+// Tightly-cropped asset (generated from "Love bot 2.png" by trimming the large
+// transparent margins, +24px safe padding). The bot fills the frame so it can
+// be sized and positioned precisely. Source is 898 × 1320.
+const BOT_SRC = '/love-bot-trim.png';
+const BOT_RATIO = 1320 / 898;
 
 interface LoveBotProps {
   /** Rendered width in px (height scales with the source aspect ratio). */
