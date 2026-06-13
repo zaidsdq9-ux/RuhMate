@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { HeroOrbs } from '@/components/marketing/HeroOrbs';
-import { AIDemoCard } from '@/components/marketing/AIDemoCard';
 import { LoveBot } from '@/components/marketing/LoveBot';
 import { Reveal } from '@/components/marketing/Reveal';
 import { FAQ } from '@/components/marketing/FAQ';
@@ -99,15 +98,27 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Hero visual — floating love-bot behind the live AI demo card */}
-          <div className="anim-fade-up relative" style={{ animationDelay: '120ms' }}>
-            <LoveBot
-              width={230}
-              priority
-              className="absolute -top-24 right-0 z-0 hidden w-[180px] opacity-95 md:block lg:w-[230px]"
-            />
-            <div className="relative z-10">
-              <AIDemoCard />
+          {/* Hero visual — the floating love-bot mascot on a magenta panel */}
+          <div
+            className="anim-fade-up relative flex items-center justify-center md:justify-end"
+            style={{ animationDelay: '120ms' }}
+          >
+            <div className="relative w-full max-w-[460px]">
+              {/* magenta rounded backdrop the bot floats over */}
+              <div
+                aria-hidden
+                className="absolute left-1/2 top-[14%] h-[72%] w-[78%] -translate-x-1/2 rounded-[40px]"
+                style={{
+                  background: 'linear-gradient(155deg, var(--rose) 0%, var(--rose-deep) 100%)',
+                  boxShadow: '0 30px 80px rgba(130,20,90,0.28)',
+                }}
+              />
+              <LoveBot
+                width={360}
+                priority
+                glow={false}
+                className="relative z-10 mx-auto w-[240px] sm:w-[290px] lg:w-[330px]"
+              />
             </div>
           </div>
         </div>
