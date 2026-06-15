@@ -8,7 +8,7 @@ interface PortraitProps {
   /**
    * Drives which silhouette is drawn. RuhMate is photo-free by design, so the
    * avatar is a clean gender-based illustration rather than a number badge.
-   * Falls back to a neutral person icon when unknown.
+   * Male → indigo background. Female → rose background. Falls back to neutral.
    */
   gender?: 'male' | 'female';
   className?: string;
@@ -18,12 +18,14 @@ export function Portrait({ idx, size = 56, gender, className }: PortraitProps) {
   const iconSize = Math.round(size * 0.52);
   const Glyph =
     gender === 'male' ? Icon.Male : gender === 'female' ? Icon.Female : Icon.User;
+  const genderVariant =
+    gender === 'male' ? 'portrait-male' : gender === 'female' ? 'portrait-female' : '';
   return (
     <div
-      className={cn('portrait', className)}
+      className={cn('portrait', genderVariant, className)}
       style={{ width: size, height: size }}
       role="img"
-      aria-label={`Profile ${String(idx)} avatar`}
+      aria-label={`${gender === 'male' ? 'Male' : gender === 'female' ? 'Female' : 'Profile'} avatar`}
     >
       <span className="relative z-[2] grid place-items-center text-white">
         <Glyph size={iconSize} />

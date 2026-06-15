@@ -507,8 +507,19 @@
     color: #fff;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(130, 20, 90, 0.18);
-    /* subtle inner ring so it reads as a real avatar chip */
+    box-shadow:
+      0 2px 8px rgba(130, 20, 90, 0.18),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+  }
+  /* Gender-specific portrait tints */
+  .portrait-male {
+    background: linear-gradient(150deg, #6366f1 0%, #4338ca 100%);
+    box-shadow:
+      0 2px 8px rgba(67, 56, 202, 0.22),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+  }
+  .portrait-female {
+    background: linear-gradient(150deg, var(--rose) 0%, var(--rose-deep) 100%);
     box-shadow:
       0 2px 8px rgba(130, 20, 90, 0.18),
       inset 0 0 0 1px rgba(255, 255, 255, 0.35);

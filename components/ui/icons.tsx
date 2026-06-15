@@ -232,17 +232,21 @@ export const Icon = {
   /* Gender-based profile silhouettes (photo-free identity avatars). */
   Male: ({ size = 24, className }: P = {}) => (
     <svg width={size} height={size} viewBox="0 0 24 24" className={className}>
-      <circle cx="12" cy="7.5" r="3.6" {...stk} />
-      <path {...stk} d="M5 20c0-3.6 3.1-6.2 7-6.2s7 2.6 7 6.2" />
+      {/* head */}
+      <circle cx="12" cy="7.2" r="3.6" {...stk} />
+      {/* broad squared shoulders → reads clearly masculine */}
+      <path {...stk} d="M4 21v-1.5c0-2.3 1.4-4.2 3.5-5.2L12 13.8l4.5 0.5c2.1 1 3.5 2.9 3.5 5.2V21" />
     </svg>
   ),
   Female: ({ size = 24, className }: P = {}) => (
     <svg width={size} height={size} viewBox="0 0 24 24" className={className}>
-      {/* head with a soft veil/hijab silhouette to read as female + modest */}
+      {/* head with hijab silhouette */}
       <path {...stk} d="M12 3.4c-3 0-4.6 2.2-4.6 4.8 0 1.4.5 2.5 1.3 3.3" />
       <path {...stk} d="M12 3.4c3 0 4.6 2.2 4.6 4.8 0 1.4-.5 2.5-1.3 3.3" />
       <path {...stk} d="M8.7 11.5c.9.7 2 1.1 3.3 1.1s2.4-.4 3.3-1.1" />
-      <path {...stk} d="M5.4 20.4c.4-3.8 3.2-6 6.6-6s6.2 2.2 6.6 6" />
+      {/* A-line dress body — clearly feminine */}
+      <path {...stk} d="M9 13.5l-3 7.5h12l-3-7.5" />
+      <path {...stk} d="M9 13.5h6" />
     </svg>
   ),
   Facebook: ({ size = 18, className }: P = {}) => (
