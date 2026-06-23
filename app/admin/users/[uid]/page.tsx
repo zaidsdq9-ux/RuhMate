@@ -112,6 +112,8 @@ export default async function AdminUserDetailPage({
             <dd className="text-ink">{user.email_verified ? 'yes' : 'no'}</dd>
             <dt className="text-ink-muted">Points balance</dt>
             <dd className="text-ink">{user.points_balance}</dd>
+            <dt className="text-ink-muted">Plan</dt>
+            <dd className="capitalize text-ink">{user.plan ?? 'Free'}</dd>
             <dt className="text-ink-muted">Has profile</dt>
             <dd className="text-ink">{user.has_profile ? 'yes' : 'no'}</dd>
             <dt className="text-ink-muted">Auth providers</dt>

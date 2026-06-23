@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { adminAuth, adminDb } from '@/lib/firebase/admin';
 import { COLLECTIONS } from '@/lib/firebase/collections';
 import { logger } from '@/lib/logger';
+import { grantPlanDirect } from '@/lib/payments/grant';
 import type { UserDoc } from '@/types';
 
 export const runtime = 'nodejs';
@@ -46,6 +47,10 @@ const Body = z.discriminatedUnion('action', [
     action: z.literal('credit_adjust'),
     delta: z.number().int().refine((v) => v !== 0, 'Delta must be non-zero'),
     reason: z.string().trim().min(1).max(200),
+  }),
+  z.object({
+    action: z.literal('grant_plan'),
+    pack_id: z.string().trim().min(2).max(40),
   }),
 ]);
 
@@ -117,6 +122,25 @@ export async function PATCH(
     });
     logger.info({ actor: admin.uid, target: uid, delta, reason }, 'manual credit adjust');
     return NextResponse.json({ success: true, data: { points_balance: newBalance } });
+  }
+
+  if (parsed.data.action === 'grant_plan') {
+    const result = await grantPlanDirect({
+      uid,
+      packId: parsed.data.pack_id,
+      adminUid: admin.uid,
+    });
+    if (!result.ok) {
+      return NextResponse.json({ success: false, error: result.error }, { status: result.status });
+    }
+    logger.info(
+      { actor: admin.uid, target: uid, packId: parsed.data.pack_id },
+      'admin granted plan directly',
+    );
+    return NextResponse.json({
+      success: true,
+      data: { points_balance: result.points_balance, plan: result.plan },
+    });
   }
 
   return NextResponse.json({ success: false, error: 'Unhandled action' }, { status: 400 });

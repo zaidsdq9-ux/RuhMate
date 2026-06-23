@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Icon } from '@/components/ui/icons';
 import { getPackMeta, formatLkr, CONTACT_REVEAL_COST } from '@/lib/pricing';
+import { PaymentInstructions, type PaymentRequestData } from '@/components/buy/PaymentInstructions';
 
 export interface BuyablePack {
   id: string;
@@ -15,22 +16,18 @@ export interface BuyablePack {
 
 interface Props {
   packs: BuyablePack[];
-  paymentsReady: boolean;
 }
 
-export function PackGrid({ packs, paymentsReady }: Props) {
+export function PackGrid({ packs }: Props) {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [instructions, setInstructions] = useState<PaymentRequestData | null>(null);
 
-  async function startCheckout(packId: string) {
-    if (!paymentsReady) {
-      setError('Payments are not configured yet. PayHere credentials pending.');
-      return;
-    }
+  async function requestPlan(packId: string) {
     setBusyId(packId);
     setError(null);
     try {
-      const res = await fetch('/api/checkout/start', {
+      const res = await fetch('/api/payment-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pack_id: packId }),
@@ -38,28 +35,16 @@ export function PackGrid({ packs, paymentsReady }: Props) {
       const json = (await res.json()) as {
         success: boolean;
         error?: string;
-        data?: { action: string; fields: Record<string, string> };
+        data?: PaymentRequestData;
       };
       if (!res.ok || !json.success || !json.data) {
-        setError(json.error ?? 'Could not start checkout.');
-        setBusyId(null);
+        setError(json.error ?? 'Could not start your request.');
         return;
       }
-      // Auto-submit the PayHere form
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = json.data.action;
-      for (const [k, v] of Object.entries(json.data.fields)) {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = k;
-        input.value = v;
-        form.appendChild(input);
-      }
-      document.body.appendChild(form);
-      form.submit();
+      setInstructions(json.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Checkout error');
+      setError(err instanceof Error ? err.message : 'Request error');
+    } finally {
       setBusyId(null);
     }
   }
@@ -71,12 +56,11 @@ export function PackGrid({ packs, paymentsReady }: Props) {
           {error}
         </div>
       )}
-      {!paymentsReady && (
-        <div className="rounded-card border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          Payments are pending PayHere merchant setup. Packs below show what will be available; the
-          buy button will activate once credentials are added.
-        </div>
-      )}
+
+      <div className="rounded-card border border-rose-soft bg-rose-bg/40 px-4 py-3 text-sm text-ink-soft">
+        Pick a plan, then pay by bank transfer and send your receipt on WhatsApp. Your points are
+        added once an admin confirms the payment.
+      </div>
 
       <div className="grid items-stretch gap-4 md:grid-cols-3">
         {packs.map((p) => {
@@ -137,14 +121,14 @@ export function PackGrid({ packs, paymentsReady }: Props) {
 
               <button
                 type="button"
-                onClick={() => startCheckout(p.id)}
-                disabled={busyId !== null || !paymentsReady}
+                onClick={() => requestPlan(p.id)}
+                disabled={busyId !== null}
                 className={cn(
                   'btn btn-block mt-6 justify-center',
                   popular ? 'btn-primary' : 'btn-outline',
                 )}
               >
-                {busyId === p.id ? 'Redirecting…' : paymentsReady ? cta : 'Coming soon'}
+                {busyId === p.id ? 'Loading…' : cta}
                 {busyId !== p.id && <Icon.Arrow />}
               </button>
             </div>
@@ -156,6 +140,10 @@ export function PackGrid({ packs, paymentsReady }: Props) {
           </div>
         )}
       </div>
+
+      {instructions && (
+        <PaymentInstructions data={instructions} onClose={() => setInstructions(null)} />
+      )}
     </div>
   );
 }

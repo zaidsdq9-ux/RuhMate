@@ -35,6 +35,7 @@ export async function GET(req: NextRequest) {
       role: user.role,
       status: user.status,
       points_balance: user.points_balance,
+      plan: user.plan ?? null,
       has_profile: user.has_profile,
       email_verified: user.email_verified,
     },

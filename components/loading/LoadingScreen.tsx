@@ -33,7 +33,7 @@ export function LoadingScreen({
             className="absolute -inset-6 -z-10 rounded-full bg-accent/15 blur-2xl motion-safe:animate-pulse-soft"
           />
           <Image
-            src="/pink%20logo.png"
+            src="/new%20logo.png"
             alt="RuhMate"
             width={88}
             height={88}

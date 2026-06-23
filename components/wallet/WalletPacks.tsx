@@ -1,7 +1,8 @@
 'use client';
 
-// Wallet-page top-up pack picker. Same checkout logic as components/buy/PackGrid
-// but styled to match the wallet's hero-and-pack layout. Reuses /api/checkout/start.
+// Wallet-page top-up pack picker. Same bank-transfer request flow as
+// components/buy/PackGrid but styled to match the wallet's hero-and-pack layout.
+// Posts to /api/payment-request, then shows the shared PaymentInstructions dialog.
 // Display metadata (features, CTA, "most popular") comes from lib/pricing.ts so it
 // stays in lockstep with the marketing pricing page; points/price/active come from
 // the live Firestore point_packs docs.
@@ -10,6 +11,7 @@ import { useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Icon } from '@/components/ui/icons';
 import { getPackMeta } from '@/lib/pricing';
+import { PaymentInstructions, type PaymentRequestData } from '@/components/buy/PaymentInstructions';
 
 export interface WalletPack {
   id: string;
@@ -21,7 +23,6 @@ export interface WalletPack {
 
 interface Props {
   packs: WalletPack[];
-  paymentsReady: boolean;
   /** Cost in points to view (reveal contact on) a single profile. */
   unlockCost: number;
 }
@@ -63,20 +64,17 @@ function classifyPacks(packs: WalletPack[], unlockCost: number): PackUi[] {
   return enriched;
 }
 
-export function WalletPacks({ packs, paymentsReady, unlockCost }: Props) {
+export function WalletPacks({ packs, unlockCost }: Props) {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [instructions, setInstructions] = useState<PaymentRequestData | null>(null);
   const ui = useMemo(() => classifyPacks(packs, unlockCost), [packs, unlockCost]);
 
-  async function startCheckout(packId: string) {
-    if (!paymentsReady) {
-      setError('Payments are not configured yet. PayHere credentials pending.');
-      return;
-    }
+  async function requestPlan(packId: string) {
     setBusyId(packId);
     setError(null);
     try {
-      const res = await fetch('/api/checkout/start', {
+      const res = await fetch('/api/payment-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pack_id: packId }),
@@ -84,27 +82,16 @@ export function WalletPacks({ packs, paymentsReady, unlockCost }: Props) {
       const json = (await res.json()) as {
         success: boolean;
         error?: string;
-        data?: { action: string; fields: Record<string, string> };
+        data?: PaymentRequestData;
       };
       if (!res.ok || !json.success || !json.data) {
-        setError(json.error ?? 'Could not start checkout.');
-        setBusyId(null);
+        setError(json.error ?? 'Could not start your request.');
         return;
       }
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = json.data.action;
-      for (const [k, v] of Object.entries(json.data.fields)) {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = k;
-        input.value = v;
-        form.appendChild(input);
-      }
-      document.body.appendChild(form);
-      form.submit();
+      setInstructions(json.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Checkout error');
+      setError(err instanceof Error ? err.message : 'Request error');
+    } finally {
       setBusyId(null);
     }
   }
@@ -124,11 +111,10 @@ export function WalletPacks({ packs, paymentsReady, unlockCost }: Props) {
           {error}
         </div>
       )}
-      {!paymentsReady && (
-        <div className="rounded-xl border border-warning/30 bg-gold-soft/30 px-4 py-3 text-[13px] text-ink-soft">
-          Payments are pending PayHere merchant setup. Pack buttons activate once credentials are added.
-        </div>
-      )}
+      <div className="rounded-xl border border-rose-soft bg-rose-bg/40 px-4 py-3 text-[13px] text-ink-soft">
+        Pick a plan, pay by bank transfer, and send your receipt on WhatsApp. Points are added once
+        an admin confirms your payment.
+      </div>
 
       <div className="grid items-stretch gap-4 md:grid-cols-3">
         {ui.map((p) => (
@@ -175,14 +161,14 @@ export function WalletPacks({ packs, paymentsReady, unlockCost }: Props) {
 
             <button
               type="button"
-              onClick={() => startCheckout(p.id)}
-              disabled={busyId !== null || !paymentsReady}
+              onClick={() => requestPlan(p.id)}
+              disabled={busyId !== null}
               className={cn(
                 'btn btn-sm btn-block mt-4 justify-center',
                 p.popular ? 'btn-primary' : 'btn-outline',
               )}
             >
-              {busyId === p.id ? 'Redirecting…' : paymentsReady ? p.cta : 'Coming soon'}
+              {busyId === p.id ? 'Loading…' : p.cta}
               {busyId !== p.id && <Icon.Arrow />}
             </button>
           </div>
@@ -191,8 +177,12 @@ export function WalletPacks({ packs, paymentsReady, unlockCost }: Props) {
 
       <p className="mt-1 inline-flex items-center gap-2 rounded-xl border border-line bg-surface-alt px-4 py-3 text-[12.5px] text-ink-muted">
         <Icon.Lock size={12} />
-        Payments processed via local gateways (PayHere, Visa/Mastercard). Points credit instantly.
+        Pay by bank transfer and confirm on WhatsApp. Points credit once an admin verifies payment.
       </p>
+
+      {instructions && (
+        <PaymentInstructions data={instructions} onClose={() => setInstructions(null)} />
+      )}
     </div>
   );
 }

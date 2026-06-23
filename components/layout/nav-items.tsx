@@ -51,9 +51,15 @@ export const ADMIN_NAV: NavItem[] = [
     match: (p) => p.startsWith('/admin/users'),
   },
   {
+    href: '/admin/payments',
+    label: 'Payments',
+    icon: <Icon.Wallet size={20} />,
+    match: (p) => p.startsWith('/admin/payments'),
+  },
+  {
     href: '/admin/transactions',
     label: 'Transactions',
-    icon: <Icon.Wallet size={20} />,
+    icon: <Icon.Grid size={20} />,
     match: (p) => p.startsWith('/admin/transactions'),
   },
   {

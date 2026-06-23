@@ -3,6 +3,8 @@ export const COLLECTIONS = {
   PROFILES: 'profiles',
   UNLOCKS: 'unlocks',
   TRANSACTIONS: 'transactions',
+  // manual bank-transfer purchase requests, approved by an admin to grant points
+  PAYMENT_REQUESTS: 'payment_requests',
   POINT_PACKS: 'point_packs',
   SETTINGS: 'settings',
   COUNTERS: 'counters',

@@ -27,7 +27,6 @@ async function loadPacks() {
 
 export default async function BuyPage() {
   const packs = await loadPacks();
-  const paymentsReady = !!process.env.PAYHERE_MERCHANT_ID && !!process.env.PAYHERE_MERCHANT_SECRET;
 
   return (
     <div className="mx-auto max-w-[1100px] px-4 pb-8 pt-4 sm:px-7 sm:pb-12 sm:pt-5">
@@ -39,11 +38,11 @@ export default async function BuyPage() {
         <h1 className="display mt-3 text-[34px] tracking-tight text-ink">Buy points</h1>
         <p className="mt-1.5 max-w-xl text-sm text-ink-soft">
           Pick a pack. Points never expire — and revealing a contact costs {CONTACT_REVEAL_COST}{' '}
-          points (admin-configurable). New members start with {WELCOME_POINTS} free points. LKR via
-          PayHere.
+          points (admin-configurable). New members start with {WELCOME_POINTS} free points. Pay by
+          bank transfer and confirm on WhatsApp.
         </p>
       </header>
-      <PackGrid packs={packs} paymentsReady={paymentsReady} />
+      <PackGrid packs={packs} />
     </div>
   );
 }

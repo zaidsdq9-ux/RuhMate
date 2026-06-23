@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PAID_PACKS, formatLkr } from '@/lib/pricing';
 
 interface Props {
   uid: string;
@@ -17,6 +18,7 @@ export function UserActionsPanel({ uid, status, pointsBalance }: Props) {
   const [busy, setBusy] = useState(false);
   const [delta, setDelta] = useState('');
   const [reason, setReason] = useState('');
+  const [planId, setPlanId] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   async function call(body: Record<string, unknown>) {
@@ -63,6 +65,23 @@ export function UserActionsPanel({ uid, status, pointsBalance }: Props) {
     }
   }
 
+  async function handleGrantPlan() {
+    if (!planId) {
+      setError('Pick a plan to grant.');
+      return;
+    }
+    const pack = PAID_PACKS.find((p) => p.id === planId);
+    if (!pack) return;
+    if (
+      !confirm(
+        `Grant the ${pack.name} plan? This adds ${pack.points.toLocaleString()} points to this user's balance.`,
+      )
+    )
+      return;
+    const ok = await call({ action: 'grant_plan', pack_id: planId });
+    if (ok) setPlanId('');
+  }
+
   return (
     <aside className="flex flex-col gap-4 rounded-card border border-line bg-white p-6">
       <h2 className="font-display text-xl text-ink">Admin actions</h2>
@@ -97,6 +116,32 @@ export function UserActionsPanel({ uid, status, pointsBalance }: Props) {
           />
           <Button onClick={handleAdjust} disabled={busy} className="mt-2">
             {busy ? 'Applying…' : 'Apply'}
+          </Button>
+        </div>
+      </div>
+
+      <div className="mt-2 border-t border-line pt-4">
+        <p className="text-sm font-medium text-ink">Grant a plan</p>
+        <p className="mt-1 text-xs text-ink-muted">
+          Confirms a bank-transfer purchase: adds the plan&apos;s points and sets the tier.
+        </p>
+        <div className="mt-3 grid gap-2">
+          <Label htmlFor="grant-plan">Plan</Label>
+          <select
+            id="grant-plan"
+            value={planId}
+            onChange={(e) => setPlanId(e.target.value)}
+            className="focus-ring h-10 rounded-btn border border-line bg-white px-3 text-sm text-ink"
+          >
+            <option value="">Select a plan…</option>
+            {PAID_PACKS.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name} — {p.points.toLocaleString()} pts · {formatLkr(p.price_lkr)}
+              </option>
+            ))}
+          </select>
+          <Button onClick={handleGrantPlan} disabled={busy} className="mt-2">
+            {busy ? 'Granting…' : 'Grant plan'}
           </Button>
         </div>
       </div>

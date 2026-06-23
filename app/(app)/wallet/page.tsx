@@ -127,8 +127,6 @@ export default async function WalletPage() {
   const balance = user?.points_balance ?? 0;
   const unlockCost = settings.contact_unlock_cost ?? 20;
   const reveals = Math.floor(balance / Math.max(1, unlockCost));
-  const paymentsReady =
-    !!process.env.PAYHERE_MERCHANT_ID && !!process.env.PAYHERE_MERCHANT_SECRET;
 
   const successfulTx = transactions.filter((t) => t.status === 'success');
 
@@ -197,11 +195,7 @@ export default async function WalletPage() {
           </p>
 
           <div className="mt-5">
-            <WalletPacks
-              packs={packs}
-              paymentsReady={paymentsReady}
-              unlockCost={unlockCost}
-            />
+            <WalletPacks packs={packs} unlockCost={unlockCost} />
           </div>
         </section>
       </div>

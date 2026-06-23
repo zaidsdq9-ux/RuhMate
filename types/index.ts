@@ -15,6 +15,7 @@ export type RegisteredBy =
   | 'relative'
   | 'friend';
 export type PayhereStatus = 'pending' | 'success' | 'failed' | 'refunded';
+export type PaymentRequestStatus = 'pending' | 'approved' | 'rejected';
 export type AuditAction =
   | 'create_user'
   | 'disable_user'
@@ -28,7 +29,10 @@ export type AuditAction =
   | 'publish_profile'
   | 'reset_profile_for_sibling'
   | 'webhook_credit'
-  | 'webhook_signature_reject';
+  | 'webhook_signature_reject'
+  | 'create_payment_request'
+  | 'grant_plan'
+  | 'reject_payment_request';
 
 export interface UserDoc {
   uid: string;
@@ -41,6 +45,9 @@ export interface UserDoc {
   role: UserRole;
   status: UserStatus;
   points_balance: number;
+  /** Last plan tier granted by an admin (point_packs id, e.g. 'plus'). Display only. */
+  plan?: string;
+  plan_granted_at?: Timestamp;
   has_profile: boolean;
   preference_text?: string;
   preference_embedding?: number[];
@@ -115,6 +122,27 @@ export interface TransactionDoc {
   raw_payload?: Record<string, unknown>;
   created_at: Timestamp;
   completed_at?: Timestamp;
+}
+
+/**
+ * A user's request to buy a point pack via manual bank transfer. Created when the
+ * user picks a plan on /buy; the admin approves it (granting points + plan) or
+ * rejects it from the /admin/payments queue. Doc id is auto-generated.
+ */
+export interface PaymentRequestDoc {
+  id: string;
+  user_id: string;
+  user_email: string;
+  pack_id: string;
+  /** Authoritative points + price snapshotted from point_packs at request time. */
+  points: number;
+  amount_lkr: number;
+  status: PaymentRequestStatus;
+  created_at: Timestamp;
+  approved_by?: string;
+  approved_at?: Timestamp;
+  rejected_reason?: string;
+  rejected_at?: Timestamp;
 }
 
 export interface PointPackDoc {

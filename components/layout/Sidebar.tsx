@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { RuhMateLogo } from '@/components/brand/RuhMateLogo';
 import { Icon } from '@/components/ui/icons';
 import { Portrait } from '@/components/ui/Portrait';
+import { getPackMeta } from '@/lib/pricing';
 import { APP_NAV, ADMIN_NAV, type NavItem } from './nav-items';
 
 interface MeResponse {
@@ -17,12 +18,19 @@ interface MeResponse {
     full_name: string;
     role: 'user' | 'admin';
     points_balance: number;
+    plan?: string | null;
     has_profile: boolean;
   };
 }
 
 interface SidebarProps {
   variant?: 'app' | 'admin';
+}
+
+function planLabel(me: MeResponse['data']): string {
+  if (me.role === 'admin') return 'Admin';
+  if (me.plan) return `${getPackMeta(me.plan)?.name ?? me.plan} plan`;
+  return 'Free plan';
 }
 
 export function Sidebar({ variant = 'app' }: SidebarProps) {
@@ -158,7 +166,7 @@ export function Sidebar({ variant = 'app' }: SidebarProps) {
               {me?.full_name ?? 'Loading…'}
             </div>
             <div className="truncate text-[11px] text-ink-muted">
-              {me ? `${me.points_balance} points · ${me.role === 'admin' ? 'Admin' : 'Free plan'}` : '—'}
+              {me ? `${me.points_balance} points · ${planLabel(me)}` : '—'}
             </div>
           </div>
           <button

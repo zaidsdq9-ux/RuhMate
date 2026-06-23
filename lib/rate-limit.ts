@@ -27,6 +27,7 @@ export type RateLimitKey =
   | 'profile:verify-phone'
   | 'unlock'
   | 'checkout:start'
+  | 'payment-request'
   | 'report'
   | 'account:delete'
   // Visitor (reserved — not used in Ruh-Mate today)
@@ -81,6 +82,9 @@ export const RATE_LIMITS: Record<RateLimitKey, RateLimitConfig> = {
   // script drain a wallet if the limiter backend is down.
   unlock: { limit: 40, windowSec: 60, hotEndpoint: true },
   'checkout:start': { limit: 20, windowSec: 60, hotEndpoint: true },
+  // Manual bank-transfer purchase request — keyed by uid. No money moves here
+  // (admin approves separately), so fail open and keep it generous for retries.
+  'payment-request': { limit: 10, windowSec: 60, hotEndpoint: false },
   // Abuse reporting — slow-burn.
   report: { limit: 10, windowSec: 3600, hotEndpoint: false },
   // Account deletion — irreversible, so keep generous enough to not block
