@@ -49,7 +49,7 @@ export function Footer() {
         <div className="grid gap-10 md:grid-cols-[1.8fr_1fr_1fr_1fr]">
           {/* Brand + contact */}
           <div>
-            <RuhMateLogo variant="white" size="xl" />
+            <RuhMateLogo variant="footer" size="xl" />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/70">
               {BRAND_TAGLINE}
             </p>

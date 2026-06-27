@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 
-type Variant = 'pink' | 'white';
+type Variant = 'pink' | 'white' | 'dashboard' | 'footer';
 type Size = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
 const SIZE_CLASS: Record<Size, string> = {
@@ -22,6 +22,8 @@ interface RuhMateLogoProps {
 const SRC: Record<Variant, string> = {
   pink: '/new%20logo.png',
   white: '/white%20logo.png',
+  dashboard: '/Dashboard%20Logo.png',
+  footer: '/footer%20logo.png',
 };
 
 export function RuhMateLogo({

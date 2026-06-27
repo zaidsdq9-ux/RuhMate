@@ -37,7 +37,7 @@ export function MarketingHeader() {
       <div className="mx-auto flex max-w-[1180px] items-center justify-between px-7 py-4">
         <Link href="/" aria-label="RuhMate home" className="flex items-center">
           <RuhMateLogo
-            variant="pink"
+            variant="dashboard"
             size="lg"
             priority
             className="h-[50px] w-auto object-contain sm:h-[58px] md:h-[64px]"

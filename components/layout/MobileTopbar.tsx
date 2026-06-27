@@ -160,7 +160,7 @@ export function AppTopbar({ variant = 'app' }: AppTopbarProps) {
           }}
         >
           <div className="mb-5 flex items-center justify-between">
-            <RuhMateLogo variant="pink" size="md" />
+            <RuhMateLogo variant="dashboard" size="md" />
             <button
               onClick={() => setDrawerOpen(false)}
               aria-label="Close menu"

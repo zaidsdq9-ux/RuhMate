@@ -79,7 +79,7 @@ export function Sidebar({ variant = 'app' }: SidebarProps) {
         className="flex items-center justify-center pb-4 pt-1"
       >
         <span className="inline-flex items-center gap-2.5">
-          <RuhMateLogo variant="pink" size="xl" priority className="h-[62px]" />
+          <RuhMateLogo variant="dashboard" size="xl" priority className="h-[62px]" />
           {variant === 'admin' && (
             <span className="rounded-pill bg-rose-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-rose-deep">
               admin
