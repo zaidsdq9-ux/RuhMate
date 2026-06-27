@@ -20,7 +20,7 @@ interface RuhMateLogoProps {
 
 // Source files live in /public — filenames contain a space, encoded for safety.
 const SRC: Record<Variant, string> = {
-  pink: '/new%20logo.png',
+  pink: '/Dashboard%20Logo.png',
   white: '/white%20logo.png',
   dashboard: '/Dashboard%20Logo.png',
   footer: '/footer%20logo.png',
