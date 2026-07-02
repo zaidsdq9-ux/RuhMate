@@ -16,6 +16,11 @@ export type RegisteredBy =
   | 'friend';
 export type PayhereStatus = 'pending' | 'success' | 'failed' | 'refunded';
 export type PaymentRequestStatus = 'pending' | 'approved' | 'rejected';
+export type OtpPurpose =
+  | 'profile_phone_verification'
+  | 'profile_creation'
+  | 'whatsapp_verification';
+export type OtpStatus = 'pending' | 'verified' | 'expired' | 'failed';
 export type AuditAction =
   | 'create_user'
   | 'disable_user'
@@ -88,8 +93,9 @@ export interface ProfileDoc {
   location_preference: LocationPreference;
   contact_phone: string;
   contact_whatsapp: string;
-  // Phone OTP verification (required before publishing). `verified_phone_number`
-  // is the E.164 value Firebase confirmed; if `contact_phone` later changes to a
+  // Phone OTP verification (required before publishing), via Text.lk SMS.
+  // `verified_phone_number` is the normalized Sri Lankan number (e.g.
+  // "94771234567") the OTP confirmed; if `contact_phone` later changes to a
   // different number, the server resets `phone_verified` to false.
   phone_verified?: boolean;
   phone_verified_at?: Timestamp;
@@ -160,6 +166,29 @@ export interface SettingsDoc {
   maintenance_mode: boolean;
   maintenance_message?: string;
   signup_open: boolean;
+}
+
+/**
+ * One doc per (user, purpose) — doc id is `${user_id}_${purpose}`. A new send
+ * overwrites the previous record for that purpose, so there is never more
+ * than one pending code per user/purpose at a time.
+ */
+export interface OtpDoc {
+  id: string;
+  user_id: string;
+  /** Canonical Text.lk recipient format, e.g. "94771234567" (no leading +). */
+  phone_normalized: string;
+  purpose: OtpPurpose;
+  otp_hash: string;
+  expires_at: Timestamp;
+  attempts: number;
+  max_attempts: number;
+  last_sent_at: Timestamp;
+  verified_at?: Timestamp;
+  created_at: Timestamp;
+  updated_at: Timestamp;
+  textlk_message_id?: string;
+  status: OtpStatus;
 }
 
 export interface AuditLogDoc {

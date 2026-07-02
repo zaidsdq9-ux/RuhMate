@@ -13,7 +13,7 @@ import { embedText, EMBEDDING_INFO } from '@/lib/openai/embed';
 import { allocateProfileIndex } from '@/lib/profile/counter';
 import { serializeProfile } from '@/lib/profile/helpers';
 import { rateLimit, tooManyRequests } from '@/lib/rate-limit';
-import { normalizePhoneE164 } from '@/lib/utils/phone';
+import { normalizeSriLankanPhone } from '@/lib/utils/phone';
 import type { ProfileDoc, UserDoc } from '@/types';
 
 export const runtime = 'nodejs';
@@ -129,8 +129,9 @@ export async function POST(req: NextRequest) {
 
   // Phone verification resets when the contact number changes to a different
   // value than the one previously verified. (CLAUDE.md §4 client requirement.)
-  const newPhoneNorm =
-    typeof input.contact_phone === 'string' ? normalizePhoneE164(input.contact_phone) : '';
+  const newPhoneResult =
+    typeof input.contact_phone === 'string' ? normalizeSriLankanPhone(input.contact_phone) : null;
+  const newPhoneNorm = newPhoneResult?.ok ? newPhoneResult.value! : '';
   const verifiedNorm = existing?.verified_phone_number ?? '';
   const phoneChanged = !!newPhoneNorm && !!verifiedNorm && newPhoneNorm !== verifiedNorm;
   if (phoneChanged) {

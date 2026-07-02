@@ -24,7 +24,8 @@ export type RateLimitKey =
   | 'auth:forgot'
   // Profile + spend
   | 'profile:write'
-  | 'profile:verify-phone'
+  | 'otp:send'
+  | 'otp:verify'
   | 'unlock'
   | 'checkout:start'
   | 'payment-request'
@@ -75,9 +76,14 @@ export const RATE_LIMITS: Record<RateLimitKey, RateLimitConfig> = {
   'auth:forgot': { limit: 10, windowSec: 60 * 10, hotEndpoint: false },
   // Profile write — keyed by uid. Per-user scope means family NAT is safe.
   'profile:write': { limit: 20, windowSec: 60, hotEndpoint: false },
-  // Phone OTP verification — keyed by uid. Tight (SMS costs money) but fail
-  // open so a limiter hiccup never blocks a legitimate publish.
-  'profile:verify-phone': { limit: 12, windowSec: 60 * 10, hotEndpoint: false },
+  // Text.lk OTP send — keyed by uid (+ phone, via the `extra` param). SMS
+  // costs money, so fail CLOSED if the rate-limit backend is unavailable.
+  // The 60s resend cooldown is enforced separately in lib/otp/service.ts.
+  'otp:send': { limit: 8, windowSec: 60 * 10, hotEndpoint: true },
+  // Text.lk OTP verify — keyed by uid. No SMS cost, and the OTP's own
+  // max-attempts guard is the primary defense, so fail open like other
+  // non-money endpoints.
+  'otp:verify': { limit: 30, windowSec: 60 * 10, hotEndpoint: false },
   // Money / points — keyed by uid. Fail CLOSED — better to 429 than to let a
   // script drain a wallet if the limiter backend is down.
   unlock: { limit: 40, windowSec: 60, hotEndpoint: true },

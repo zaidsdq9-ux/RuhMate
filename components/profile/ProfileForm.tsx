@@ -10,7 +10,7 @@ import { Select } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioPill } from '@/components/ui/radio-group';
 import { PhoneVerifyModal } from '@/components/profile/PhoneVerifyModal';
-import { normalizePhoneE164 } from '@/lib/utils/phone';
+import { normalizeSriLankanPhone } from '@/lib/utils/phone';
 import {
   ABOUT_ME_MAX,
   CITY_OTHER,
@@ -252,10 +252,13 @@ export function ProfileForm({ initialProfile }: Props) {
   );
 
   // Verified only counts if the verified number still matches the typed one.
+  const verifiedNormResult = normalizeSriLankanPhone(verifiedNumber);
+  const currentNormResult = normalizeSriLankanPhone(state.contact_phone);
   const phoneIsVerified =
     phoneVerified &&
-    state.contact_phone.trim() !== '' &&
-    normalizePhoneE164(verifiedNumber) === normalizePhoneE164(state.contact_phone);
+    verifiedNormResult.ok &&
+    currentNormResult.ok &&
+    verifiedNormResult.value === currentNormResult.value;
 
   const published = initialProfile?.status === 'published';
   const indexNumber = initialProfile?.index_number;

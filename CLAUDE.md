@@ -68,6 +68,14 @@ PAYHERE_MODE=sandbox    # sandbox | live
 # Resend
 RESEND_API_KEY=
 
+# Text.lk (SMS OTP — replaces Firebase phone auth for +94 numbers)
+TEXTLK_API_TOKEN=
+TEXTLK_SENDER_ID=TextLKDemo   # ACTIVE demo sender; switch to Ruhmate.lk once approved (env change only)
+OTP_EXPIRY_MINUTES=5
+OTP_RESEND_COOLDOWN_SECONDS=60
+OTP_MAX_ATTEMPTS=5
+OTP_HASH_SECRET=              # random 32+ byte secret, HMACs OTP codes at rest
+
 # App
 NEXT_PUBLIC_APP_URL=
 ADMIN_EMAILS=           # comma-separated allowlist

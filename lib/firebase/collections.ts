@@ -13,6 +13,8 @@ export const COLLECTIONS = {
   RATE_LIMITS: 'rate_limits',
   // viewer-curated state — one doc per (viewer, target) pair, idempotent
   PROFILE_ACTIONS: 'profile_actions',
+  // Text.lk SMS OTP records — one doc per (user, purpose), doc id `${uid}_${purpose}`
+  OTP_CODES: 'otp_codes',
 } as const;
 
 export const SETTINGS_DOC_ID = 'global';

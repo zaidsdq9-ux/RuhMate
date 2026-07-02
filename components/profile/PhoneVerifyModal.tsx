@@ -1,15 +1,15 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import type { ConfirmationResult } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Icon } from '@/components/ui/icons';
-import { sendPhoneOtp, confirmPhoneOtp, clearRecaptcha } from '@/lib/firebase/phone-auth';
-import { normalizePhoneE164, isLikelyE164 } from '@/lib/utils/phone';
+import { formatSriLankanPhoneForDisplay, normalizeSriLankanPhone } from '@/lib/utils/phone';
+
+const RESEND_COOLDOWN_SECONDS = 60;
 
 interface Props {
-  /** Raw contact phone from the form. Normalised to E.164 for sending. */
+  /** Raw contact phone from the form. Normalised to Text.lk format for sending. */
   phoneRaw: string;
   /** Confirm-button label: "Verify" (standalone) or "Verify & Publish" (publish gate). */
   actionLabel?: string;
@@ -20,64 +20,99 @@ interface Props {
 
 type Step = 'enter' | 'sending' | 'code' | 'verifying';
 
-const RECAPTCHA_ID = 'otp-recaptcha-container';
-
 export function PhoneVerifyModal({ phoneRaw, actionLabel = 'Verify', onVerified, onClose }: Props) {
-  const e164 = normalizePhoneE164(phoneRaw);
-  const valid = isLikelyE164(e164);
+  const norm = normalizeSriLankanPhone(phoneRaw);
+  const valid = norm.ok && !!norm.value;
+  const displayNumber = valid ? formatSriLankanPhoneForDisplay(norm.value!) : phoneRaw || '—';
 
   const [step, setStep] = useState<Step>('enter');
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const confirmationRef = useRef<ConfirmationResult | null>(null);
+  const [cooldown, setCooldown] = useState(0);
+  const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Tidy up the reCAPTCHA widget when the modal unmounts.
-  useEffect(() => () => clearRecaptcha(), []);
+  useEffect(() => {
+    return () => {
+      if (cooldownRef.current) clearInterval(cooldownRef.current);
+    };
+  }, []);
+
+  function startCooldown(seconds: number) {
+    setCooldown(seconds);
+    if (cooldownRef.current) clearInterval(cooldownRef.current);
+    cooldownRef.current = setInterval(() => {
+      setCooldown((prev) => {
+        if (prev <= 1) {
+          if (cooldownRef.current) clearInterval(cooldownRef.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }
 
   async function handleSend() {
     setError(null);
-    if (!valid) {
-      setError('Enter a valid phone number in the Contact section first.');
+    if (!valid || !norm.value) {
+      setError(norm.error ?? 'Enter a valid Sri Lankan mobile number.');
       return;
     }
     setStep('sending');
     try {
-      confirmationRef.current = await sendPhoneOtp(e164, RECAPTCHA_ID);
+      const res = await fetch('/api/otp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: norm.value, purpose: 'profile_phone_verification' }),
+      });
+      const body = (await res.json()) as {
+        success: boolean;
+        error?: string;
+        data?: { alreadyVerified?: boolean };
+      };
+      if (!res.ok || !body.success) {
+        setError(body.error ?? 'Could not send the verification code. Please try again.');
+        setStep('enter');
+        return;
+      }
+      if (body.data?.alreadyVerified) {
+        onVerified();
+        return;
+      }
       setStep('code');
-    } catch (err) {
-      setError(messageFor(err, 'Could not send the code. Check the number and try again.'));
+      startCooldown(RESEND_COOLDOWN_SECONDS);
+    } catch {
+      setError('Could not send the verification code. Please try again.');
       setStep('enter');
-      clearRecaptcha();
     }
   }
 
   async function handleVerify() {
     setError(null);
-    if (!confirmationRef.current) {
-      setError('Please request a code first.');
-      return;
-    }
-    if (code.trim().length < 6) {
+    if (!norm.value) return;
+    if (code.trim().length !== 6) {
       setError('Enter the 6-digit code from the SMS.');
       return;
     }
     setStep('verifying');
     try {
-      const token = await confirmPhoneOtp(confirmationRef.current, code.trim());
-      const res = await fetch('/api/profile/verify-phone', {
+      const res = await fetch('/api/otp/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token }),
+        body: JSON.stringify({
+          phone: norm.value,
+          otp: code.trim(),
+          purpose: 'profile_phone_verification',
+        }),
       });
       const body = (await res.json()) as { success: boolean; error?: string };
       if (!res.ok || !body.success) {
-        setError(body.error ?? 'Verification failed. Please try again.');
+        setError(body.error ?? 'Invalid code. Please try again.');
         setStep('code');
         return;
       }
       onVerified();
-    } catch (err) {
-      setError(messageFor(err, 'That code did not match. Please try again.'));
+    } catch {
+      setError('Verification failed. Please try again.');
       setStep('code');
     }
   }
@@ -103,8 +138,7 @@ export function PhoneVerifyModal({ phoneRaw, actionLabel = 'Verify', onVerified,
         </div>
         <p className="text-sm leading-[1.55] text-ink-soft">
           Please verify your phone number before publishing your profile. We&apos;ll text a
-          one-time code to{' '}
-          <strong className="text-ink">{valid ? e164 : phoneRaw || '—'}</strong>.
+          one-time code to <strong className="text-ink">{displayNumber}</strong>.
         </p>
 
         <div className="mt-5 flex flex-col gap-3">
@@ -134,10 +168,10 @@ export function PhoneVerifyModal({ phoneRaw, actionLabel = 'Verify', onVerified,
               <button
                 type="button"
                 onClick={handleSend}
-                disabled={step === 'verifying'}
-                className="text-[13px] font-medium text-rose-deep hover:underline disabled:opacity-50"
+                disabled={step === 'verifying' || cooldown > 0}
+                className="text-[13px] font-medium text-rose-deep hover:underline disabled:cursor-not-allowed disabled:text-ink-faint disabled:no-underline"
               >
-                Resend code
+                {cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend code'}
               </button>
             </>
           )}
@@ -148,27 +182,7 @@ export function PhoneVerifyModal({ phoneRaw, actionLabel = 'Verify', onVerified,
             </div>
           )}
         </div>
-
-        {/* Invisible reCAPTCHA mounts here (required by Firebase phone auth). */}
-        <div id={RECAPTCHA_ID} />
       </div>
     </div>
   );
-}
-
-function messageFor(err: unknown, fallback: string): string {
-  if (err && typeof err === 'object' && 'code' in err) {
-    const code = String((err as { code: unknown }).code);
-    if (code.includes('invalid-phone-number')) return 'That phone number is not valid.';
-    if (code.includes('invalid-verification-code')) return 'That code did not match. Please try again.';
-    if (code.includes('too-many-requests')) return 'Too many attempts. Please wait a few minutes.';
-    if (code.includes('code-expired')) return 'The code expired. Please request a new one.';
-    if (code.includes('captcha')) return 'reCAPTCHA check failed. Please try again.';
-    if (code.includes('billing-not-enabled'))
-      return 'SMS to real numbers needs the Firebase Blaze plan. (Test numbers work on the free plan.)';
-    if (code.includes('quota-exceeded')) return 'Daily SMS limit reached. Please try again later.';
-    if (code.includes('operation-not-allowed'))
-      return 'Phone sign-in is not enabled for this project.';
-  }
-  return fallback;
 }
