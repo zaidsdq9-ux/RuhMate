@@ -21,7 +21,7 @@ import { applySecurityHeaders } from './lib/security/headers';
 import { classifyHost } from './lib/security/host';
 
 const PROTECTED_PREFIXES = ['/feed', '/profile', '/wallet', '/buy', '/settings', '/admin'];
-const AUTH_PAGES = ['/login', '/signup', '/forgot', '/reset', '/verify-email'];
+const AUTH_PAGES = ['/login', '/signup', '/forgot', '/reset'];
 
 const MAINTENANCE_ALLOW_PREFIXES = [
   '/maintenance',

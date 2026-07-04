@@ -17,7 +17,6 @@ const NO_STORE_PATHS = [
   '/admin/:path*',
   '/login',
   '/signup',
-  '/verify-email',
   '/forgot',
   '/reset',
 ];

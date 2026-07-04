@@ -82,12 +82,6 @@ export default async function MyProfilePage() {
         </div>
       </div>
 
-      {!user?.email_verified && (
-        <div className="card mb-6 border-warning/30 bg-gold-soft/30 p-4 text-[13.5px] text-ink-soft">
-          You can save a draft now, but you must verify your email before publishing.
-        </div>
-      )}
-
       <div className="card p-5 sm:p-7">
         <h2 className="display mb-4 text-[22px]">
           {profile ? 'Edit your profile' : 'Create your profile'}

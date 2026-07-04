@@ -56,12 +56,6 @@ export async function POST(req: NextRequest) {
   if (user.status === 'disabled') {
     return NextResponse.json({ success: false, error: 'Account disabled' }, { status: 403 });
   }
-  if (!user.email_verified) {
-    return NextResponse.json(
-      { success: false, error: 'Verify your email before buying points.' },
-      { status: 403 },
-    );
-  }
 
   const merchantId = process.env.PAYHERE_MERCHANT_ID;
   const merchantSecret = process.env.PAYHERE_MERCHANT_SECRET;

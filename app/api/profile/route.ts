@@ -85,18 +85,13 @@ export async function POST(req: NextRequest) {
   }
   const input = parsed.data;
 
-  // Email-verification gate before publishing.
+  // Account-status gate before publishing. Email verification is no longer
+  // required to publish — the phone-OTP gate below is the identity check.
   if (action === 'publish') {
     const userSnap = await adminDb.collection(COLLECTIONS.USERS).doc(uid).get();
     const user = userSnap.data() as UserDoc | undefined;
     if (!user) {
       return NextResponse.json({ success: false, error: 'User missing' }, { status: 401 });
-    }
-    if (!user.email_verified) {
-      return NextResponse.json(
-        { success: false, error: 'Verify your email before publishing.' },
-        { status: 403 },
-      );
     }
     if (user.status === 'disabled') {
       return NextResponse.json({ success: false, error: 'Account disabled' }, { status: 403 });

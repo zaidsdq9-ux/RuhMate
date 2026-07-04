@@ -20,10 +20,10 @@ export type RateLimitKey =
   | 'auth:login'
   | 'auth:signup'
   | 'auth:session'
-  | 'auth:sync-verified'
   | 'auth:forgot'
   // Profile + spend
   | 'profile:write'
+  | 'feed'
   | 'otp:send'
   | 'otp:verify'
   | 'unlock'
@@ -72,10 +72,14 @@ export const RATE_LIMITS: Record<RateLimitKey, RateLimitConfig> = {
   'auth:login': { limit: 60, windowSec: 60, hotEndpoint: false },
   'auth:signup': { limit: 10, windowSec: 60, hotEndpoint: false },
   'auth:session': { limit: 300, windowSec: 60, hotEndpoint: false },
-  'auth:sync-verified': { limit: 120, windowSec: 60, hotEndpoint: false },
   'auth:forgot': { limit: 10, windowSec: 60 * 10, hotEndpoint: false },
   // Profile write — keyed by uid. Per-user scope means family NAT is safe.
   'profile:write': { limit: 20, windowSec: 60, hotEndpoint: false },
+  // Feed — data-heavy read (Firestore query + vector findNearest). Keyed by uid
+  // so infinite-scroll from one household never NAT-blocks another. Fail OPEN —
+  // a limiter hiccup must never blank the app's main screen. Generous enough for
+  // fast scrolling + filter changes, tight enough to throttle a scraping script.
+  feed: { limit: 120, windowSec: 60, hotEndpoint: false },
   // Text.lk OTP send — keyed by uid (+ phone, via the `extra` param). SMS
   // costs money, so fail CLOSED if the rate-limit backend is unavailable.
   // The 60s resend cooldown is enforced separately in lib/otp/service.ts.

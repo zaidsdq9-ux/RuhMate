@@ -44,13 +44,3 @@ export async function requireAuth(req: NextRequest): Promise<AuthedRequest | Nex
     return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 });
   }
 }
-
-export function requireVerified(ctx: AuthedRequest): NextResponse | null {
-  if (!ctx.email_verified) {
-    return NextResponse.json(
-      { success: false, error: 'Email verification required' },
-      { status: 403 },
-    );
-  }
-  return null;
-}

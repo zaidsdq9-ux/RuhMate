@@ -60,12 +60,6 @@ export async function POST(req: NextRequest) {
   if (user.status === 'disabled') {
     return NextResponse.json({ success: false, error: 'Account disabled' }, { status: 403 });
   }
-  if (!user.email_verified) {
-    return NextResponse.json(
-      { success: false, error: 'Verify your email before requesting a plan.' },
-      { status: 403 },
-    );
-  }
 
   // Idempotency-friendly: reuse an existing pending request for the same pack
   // instead of stacking duplicates (e.g. user clicks twice or reopens /buy).

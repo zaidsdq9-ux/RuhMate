@@ -4,7 +4,6 @@ import { useState, useEffect, useRef, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   createUserWithEmailAndPassword,
-  sendEmailVerification,
   signInWithPopup,
   updateProfile,
 } from 'firebase/auth';
@@ -112,9 +111,9 @@ export function SignupForm() {
         phone: form.phone,
         provider: 'password',
       });
-      await sendEmailVerification(cred.user);
 
-      // Auth confirmed — ramp to 100%, then redirect.
+      // Auth confirmed — ramp to 100%, then go straight into the app. Email
+      // verification is not required to use RuhMate.
       clearTimer();
       timerRef.current = setInterval(() => {
         const next = Math.min(100, progressRef.current + 5);
@@ -122,7 +121,7 @@ export function SignupForm() {
         setProgress(Math.floor(next));
         if (next >= 100) {
           clearTimer();
-          router.push('/verify-email');
+          router.push('/profile/me');
         }
       }, 30);
     } catch (err) {

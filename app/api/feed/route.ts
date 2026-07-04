@@ -5,6 +5,7 @@ import { adminAuth, adminDb } from '@/lib/firebase/admin';
 import { COLLECTIONS } from '@/lib/firebase/collections';
 import { ageFromDob } from '@/lib/profile/helpers';
 import { logger } from '@/lib/logger';
+import { rateLimit, tooManyRequests } from '@/lib/rate-limit';
 import type { ProfileDoc, UserDoc } from '@/types';
 
 export const runtime = 'nodejs';
@@ -59,6 +60,11 @@ export async function GET(req: NextRequest) {
   } catch {
     return NextResponse.json({ success: false, error: 'Invalid session' }, { status: 401 });
   }
+
+  // Rate-limit this data-heavy endpoint per viewer (throttles scraping without
+  // NAT-blocking a household). Fails open so a limiter hiccup never blanks the feed.
+  const rl = await rateLimit(req, 'feed', viewerUid);
+  if (!rl.ok) return tooManyRequests(rl);
 
   const params = Object.fromEntries(req.nextUrl.searchParams.entries());
   const parsed = FilterSchema.safeParse(params);

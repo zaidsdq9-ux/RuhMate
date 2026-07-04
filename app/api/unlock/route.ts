@@ -58,12 +58,6 @@ export async function POST(req: NextRequest) {
   if (viewer.status === 'disabled') {
     return NextResponse.json({ success: false, error: 'Account disabled' }, { status: 403 });
   }
-  if (!viewer.email_verified) {
-    return NextResponse.json(
-      { success: false, error: 'Verify your email before unlocking contacts.' },
-      { status: 403 },
-    );
-  }
   if (!targetSnap.exists) {
     return NextResponse.json({ success: false, error: 'Profile not found' }, { status: 404 });
   }
