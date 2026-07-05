@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { adminDb } from '@/lib/firebase/admin';
 import { COLLECTIONS } from '@/lib/firebase/collections';
+import { DeleteUserButton } from '@/components/admin/DeleteUserButton';
+import { BulkDeleteUsersButton } from '@/components/admin/BulkDeleteUsersButton';
 import type { UserDoc } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -51,7 +53,10 @@ export default async function AdminUsersPage() {
     <div className="rounded-card border border-line bg-white">
       <header className="flex items-center justify-between border-b border-line px-6 py-4">
         <h1 className="font-display text-2xl text-ink">Users</h1>
-        <span className="text-sm text-ink-muted">{users.length} shown</span>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-ink-muted">{users.length} shown</span>
+          <BulkDeleteUsersButton />
+        </div>
       </header>
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-line text-sm">
@@ -63,6 +68,7 @@ export default async function AdminUsersPage() {
               <th className="px-6 py-3">Points</th>
               <th className="px-6 py-3">Profile</th>
               <th className="px-6 py-3">Joined</th>
+              <th className="px-6 py-3">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-line">
@@ -94,11 +100,18 @@ export default async function AdminUsersPage() {
                 <td className="px-6 py-4">{u.points_balance}</td>
                 <td className="px-6 py-4">{u.has_profile ? 'yes' : '—'}</td>
                 <td className="px-6 py-4 text-ink-muted">{fmtDate(u.created_at)}</td>
+                <td className="px-6 py-4">
+                  {u.role === 'admin' ? (
+                    <span className="text-xs text-ink-muted">Protected</span>
+                  ) : (
+                    <DeleteUserButton uid={u.uid} label={u.full_name || u.email} variant="link" />
+                  )}
+                </td>
               </tr>
             ))}
             {users.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-6 py-10 text-center text-ink-muted">
+                <td colSpan={7} className="px-6 py-10 text-center text-ink-muted">
                   No users yet.
                 </td>
               </tr>

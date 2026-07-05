@@ -127,6 +127,8 @@ export default async function AdminUserDetailPage({
           uid={user.uid}
           status={user.status}
           pointsBalance={user.points_balance}
+          role={user.role}
+          label={user.full_name || user.email}
         />
       </div>
 

@@ -5,6 +5,8 @@ import { adminAuth, adminDb } from '@/lib/firebase/admin';
 import { COLLECTIONS } from '@/lib/firebase/collections';
 import { logger } from '@/lib/logger';
 import { grantPlanDirect } from '@/lib/payments/grant';
+import { rateLimit, tooManyRequests } from '@/lib/rate-limit';
+import { adminDeleteUserCompletely } from '@/lib/admin/delete-user';
 import type { UserDoc } from '@/types';
 
 export const runtime = 'nodejs';
@@ -144,4 +146,64 @@ export async function PATCH(
   }
 
   return NextResponse.json({ success: false, error: 'Unhandled action' }, { status: 400 });
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ uid: string }> },
+) {
+  const admin = await authedAdmin(req);
+  if (admin instanceof NextResponse) return admin;
+  const { uid } = await params;
+
+  const rl = await rateLimit(req, 'admin:delete_user', admin.uid);
+  if (!rl.ok) return tooManyRequests(rl);
+
+  if (uid === admin.uid) {
+    return NextResponse.json(
+      { success: false, error: 'You cannot delete your own admin account.' },
+      { status: 400 },
+    );
+  }
+
+  const targetRef = adminDb.collection(COLLECTIONS.USERS).doc(uid);
+  const targetSnap = await targetRef.get();
+  if (!targetSnap.exists) {
+    return NextResponse.json({ success: false, error: 'Target not found' }, { status: 404 });
+  }
+  const target = targetSnap.data() as UserDoc;
+
+  if (target.role === 'admin') {
+    return NextResponse.json(
+      { success: false, error: 'Cannot delete an admin account from this panel.' },
+      { status: 400 },
+    );
+  }
+
+  try {
+    await adminDeleteUserCompletely(uid);
+  } catch (err) {
+    logger.error({ err, actor: admin.uid, target: uid }, 'admin user deletion failed');
+    return NextResponse.json(
+      { success: false, error: 'Deletion failed. Please try again.' },
+      { status: 500 },
+    );
+  }
+
+  await adminDb.collection(COLLECTIONS.AUDIT_LOG).add({
+    actor_uid: admin.uid,
+    action: 'delete_user',
+    target_id: uid,
+    before: {
+      email: target.email,
+      full_name: target.full_name,
+      role: target.role,
+      status: target.status,
+      points_balance: target.points_balance,
+    },
+    created_at: FieldValue.serverTimestamp(),
+  });
+
+  logger.info({ actor: admin.uid, target: uid }, 'admin deleted user account');
+  return NextResponse.json({ success: true, data: { deleted: true } });
 }

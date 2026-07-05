@@ -37,7 +37,9 @@ export type AuditAction =
   | 'webhook_signature_reject'
   | 'create_payment_request'
   | 'grant_plan'
-  | 'reject_payment_request';
+  | 'reject_payment_request'
+  | 'delete_user'
+  | 'bulk_delete_users';
 
 export interface UserDoc {
   uid: string;

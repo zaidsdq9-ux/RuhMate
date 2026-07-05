@@ -31,6 +31,8 @@ export type RateLimitKey =
   | 'payment-request'
   | 'report'
   | 'account:delete'
+  | 'admin:delete_user'
+  | 'admin:bulk_delete_users'
   // Visitor (reserved — not used in Ruh-Mate today)
   | 'visitor:greeting'
   | 'visitor:messages'
@@ -100,6 +102,15 @@ export const RATE_LIMITS: Record<RateLimitKey, RateLimitConfig> = {
   // Account deletion — irreversible, so keep generous enough to not block
   // legitimate retries on transient errors, but tight enough to block scripts.
   'account:delete': { limit: 5, windowSec: 3600, hotEndpoint: false },
+  // Admin deleting another account — gated behind the admin cookie + allowlist
+  // already, so this is a backstop against a runaway script, not the primary
+  // defense. Fail open: an admin locked out by a limiter hiccup is worse than
+  // a brief window without this specific backstop.
+  'admin:delete_user': { limit: 30, windowSec: 3600, hotEndpoint: false },
+  // Wipes every non-admin account — deliberately tight regardless of backend
+  // health, since a retry storm here is catastrophic in a way single deletes
+  // aren't.
+  'admin:bulk_delete_users': { limit: 3, windowSec: 3600, hotEndpoint: false },
   // Visitor / chatbot — reserved, not used in Ruh-Mate today.
   'visitor:greeting': { limit: 60, windowSec: 60, hotEndpoint: false },
   'visitor:messages': { limit: 40, windowSec: 60, hotEndpoint: false },

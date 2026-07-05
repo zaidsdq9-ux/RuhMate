@@ -6,14 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PAID_PACKS, formatLkr } from '@/lib/pricing';
+import { DeleteUserButton } from './DeleteUserButton';
 
 interface Props {
   uid: string;
   status: 'active' | 'disabled';
   pointsBalance: number;
+  role: 'user' | 'admin';
+  label: string;
 }
 
-export function UserActionsPanel({ uid, status, pointsBalance }: Props) {
+export function UserActionsPanel({ uid, status, pointsBalance, role, label }: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [delta, setDelta] = useState('');
@@ -147,6 +150,19 @@ export function UserActionsPanel({ uid, status, pointsBalance }: Props) {
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
+
+      {role !== 'admin' && (
+        <div className="mt-2 border-t border-line pt-4">
+          <p className="text-sm font-medium text-red-700">Danger zone</p>
+          <p className="mt-1 text-xs text-ink-muted">
+            Permanently deletes this account&apos;s login, profile, and every other record tied
+            to it. If they sign up again, it starts as a brand-new account.
+          </p>
+          <div className="mt-3">
+            <DeleteUserButton uid={uid} label={label} redirectTo="/admin/users" />
+          </div>
+        </div>
+      )}
     </aside>
   );
 }
