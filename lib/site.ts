@@ -17,16 +17,16 @@ export const SOCIAL_LINKS = {
 } as const;
 
 /**
- * Direct contact. Phone numbers are DEMO values.
+ * Direct contact.
  * - `phoneDisplay` / `whatsappDisplay` are what we show to humans.
  * - `phoneTel` is used in `tel:` links (digits + leading + only).
  * - `whatsappIntl` is used to build the wa.me link (no +, no spaces).
  */
 export const CONTACT = {
-  phoneDisplay: '+94 77 123 4567',
-  phoneTel: 'tel:+94771234567',
-  whatsappDisplay: '+94 77 123 4567',
-  whatsappIntl: '94771234567',
+  phoneDisplay: '+94 77 088 0328',
+  phoneTel: 'tel:+94770880328',
+  whatsappDisplay: '+94 77 088 0328',
+  whatsappIntl: '94770880328',
   email: 'demo@ruhmate.lk',
   emailHref: 'mailto:demo@ruhmate.lk',
 } as const;

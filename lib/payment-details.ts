@@ -35,10 +35,10 @@ export const BANK_ACCOUNTS: readonly BankAccount[] = [
 ];
 
 /** WhatsApp number to send the payment receipt to (display form). */
-export const PAYMENT_WHATSAPP_DISPLAY = '+94 77 885 9896';
+export const PAYMENT_WHATSAPP_DISPLAY = '+94 77 088 0328';
 
 /** Same number, digits only, for wa.me deep links. */
-export const PAYMENT_WHATSAPP_DIGITS = '94778859896';
+export const PAYMENT_WHATSAPP_DIGITS = '94770880328';
 
 /**
  * Build a prefilled WhatsApp deep link for sending the payment receipt. The
