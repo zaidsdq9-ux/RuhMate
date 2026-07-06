@@ -13,7 +13,7 @@ export const SOCIAL_LINKS = {
   instagram: '#',
   tiktok: '#',
   // Email is rendered as a mailto: link in the footer/social row.
-  email: 'mailto:demo@ruhmate.lk',
+  email: 'mailto:ruhmatelk@gmail.com',
 } as const;
 
 /**
@@ -27,8 +27,8 @@ export const CONTACT = {
   phoneTel: 'tel:+94770880328',
   whatsappDisplay: '+94 77 088 0328',
   whatsappIntl: '94770880328',
-  email: 'demo@ruhmate.lk',
-  emailHref: 'mailto:demo@ruhmate.lk',
+  email: 'ruhmatelk@gmail.com',
+  emailHref: 'mailto:ruhmatelk@gmail.com',
 } as const;
 
 /** Postal address — DEMO value, confirm with client. */
