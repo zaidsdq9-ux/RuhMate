@@ -21,16 +21,10 @@ export interface BankAccount {
 /** Bank accounts customers can transfer to (any one of them). */
 export const BANK_ACCOUNTS: readonly BankAccount[] = [
   {
-    account_name: 'I.A. ANAS',
-    bank: 'Sampath Bank',
-    branch: 'Kochchikade Branch',
-    account_number: '1165 5752 0606',
-  },
-  {
-    account_name: 'I.A. Anas',
-    bank: 'Commercial Bank',
-    branch: 'Kochchikade Branch',
-    account_number: '8014 3132 53',
+    account_name: 'M S M AKEEL',
+    bank: 'HNB',
+    branch: 'Islamic Banking Unit',
+    account_number: '250020385311',
   },
 ];
 

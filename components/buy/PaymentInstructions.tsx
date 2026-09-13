@@ -72,7 +72,9 @@ export function PaymentInstructions({ data, onClose }: Props) {
             <span className="grid h-5 w-5 place-items-center rounded-full bg-rose-soft text-[11px]">
               1
             </span>
-            Transfer the amount to any one account
+            {data.bank_accounts.length > 1
+              ? 'Transfer the amount to any one account'
+              : 'Transfer the amount to this account'}
           </div>
           <div className="mt-3 flex flex-col gap-3">
             {data.bank_accounts.map((acc) => (
